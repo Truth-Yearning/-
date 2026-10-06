@@ -5,7 +5,7 @@
 [![No Build](https://img.shields.io/badge/build-none-brightgreen.svg)]()
 [![No Eval](https://img.shields.io/badge/security-no%20eval%2Fnew%20Function-red.svg)]()
 
-> 单文件、零构建依赖、**3Blue1Brown 风格**的数学可视化工作台。你可以在浏览器中亲手“把玩”数学。
+> 单文件、零构建依赖、**3Blue1Brown 风格**的数学可视化工作台。你可以在浏览器中亲手玩转数学。
 
 ## 💡 为什么做这个？
 
