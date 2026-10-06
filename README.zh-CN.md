@@ -23,13 +23,16 @@
 ## 🖼️ 视觉效果
 
 **空间直角坐标系**（可拖拽的 3D 向量与平行六面体）：
-![空间直角坐标系](./images/coordinate3d.png)
+![空间直角坐标系]<img width="1893" height="846" alt="coordinate3d" src="https://github.com/user-attachments/assets/f468f39d-b95a-4acb-b86c-84af1c2af27e" />
+
 
 **微积分**（割线趋近切线、黎曼和收敛）：
-![微积分](./images/calculus.png)
+![微积分]<img width="1905" height="851" alt="calculus" src="https://github.com/user-attachments/assets/d3cf836d-f505-4844-af8e-b15bae96961e" />
+
 
 **数论 · 模运算**（素数螺旋与 Collatz 瀑布）：
-![数论模运算](./images/numbertheory.png)
+![数论模运算]<img width="1902" height="840" alt="numbertheory" src="https://github.com/user-attachments/assets/ce90ad58-f14a-4ef5-8cd7-0d088b222022" />
+
 
 ## 🚀 快速开始
 
