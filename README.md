@@ -22,13 +22,16 @@ Inspired by 3Blue1Brown's videos, I wanted to turn the immersive experience of m
 ## 🖼️ Visuals
 
 **3D Cartesian Coordinate System** (Draggable 3D vectors and parallelepipeds):
-![3D Cartesian Coordinate System](./images/coordinate3d.png)
+![3D Cartesian Coordinate System]<img width="1893" height="846" alt="coordinate3d" src="https://github.com/user-attachments/assets/2f4ed3d5-7c9a-40e0-91b3-6de602ab234f" />
+
 
 **Calculus** (Secant lines approaching tangent lines, Riemann sums converging):
-![Calculus](./images/calculus.png)
+![Calculus]<img width="1905" height="851" alt="calculus" src="https://github.com/user-attachments/assets/d5016a54-2486-49d1-b528-1812f5922faa" />
+
 
 **Number Theory & Modular Arithmetic** (Prime spirals and Collatz waterfalls):
-![Number Theory & Modular Arithmetic](./images/numbertheory.png)
+![Number Theory & Modular Arithmetic]<img width="1902" height="840" alt="numbertheory" src="https://github.com/user-attachments/assets/4a0cbe9b-e602-4ccc-8530-c107d0c5086c" />
+
 
 ## 🚀 Quick Start
 
