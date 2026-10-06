@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>数学实验室 · MathLab</title>
+<meta name="description" content="单文件 3Blue1Brown 风格数学可视化工作台：空间直角坐标系、微积分、数论与模运算">
+<style>
+/* ================= 设计令牌 ================= */
+:root{
+  --bg:#0e1116;
+  --panel:rgba(20,25,33,.78);
+  --line:rgba(255,255,255,.10);
+  --line-strong:rgba(255,255,255,.22);
+  --text:#e8ecef;
+  --dim:#8a93a0;
+  --dim2:#616a76;
+  --cyan:#58c4dd;
+  --blue:#3bc9db;
+  --yellow:#ffff00;
+  --green:#83c167;
+  --pink:#e91e63;
+  --magenta:#f26ac0;
+  --orange:#ff9f45;
+  --serif:"Cormorant Garamond","EB Garamond",Georgia,"Songti SC","Source Han Serif SC","Noto Serif SC",serif;
+  --mono:"JetBrains Mono","SFMono-Regular","Cascadia Mono",Consolas,Menlo,monospace;
+  --r:12px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;background:var(--bg);color:var(--text);
+  font-family:var(--serif);font-size:14.5px;line-height:1.5;
+  overflow:hidden;-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+}
+#stage{position:fixed;inset:0;z-index:1;display:block;touch-action:none;cursor:crosshair}
+
+/* ================= 面板通用 ================= */
+.panel{
+  position:fixed;z-index:3;
+  background:var(--panel);
+  -webkit-backdrop-filter:blur(10px) saturate(120%);
+  backdrop-filter:blur(10px) saturate(120%);
+  border:1px solid var(--line);
+  border-radius:var(--r);
+  box-shadow:0 8px 28px rgba(0,0,0,.45), inset 0 1px 0 rgba(255,255,255,.04);
+  padding:12px 14px;
+}
+.sec-title{
+  font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--dim2);
+  font-family:var(--mono);margin:10px 0 6px;display:flex;align-items:center;gap:8px;
+}
+.sec-title:first-child{margin-top:0}
+.sec-title::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
+
+/* ================= 侧栏 ================= */
+#sidebar{
+  position:fixed;left:0;top:0;bottom:0;width:236px;z-index:3;
+  background:var(--panel);
+  -webkit-backdrop-filter:blur(10px) saturate(120%);
+  backdrop-filter:blur(10px) saturate(120%);
+  border-right:1px solid var(--line);
+  display:flex;flex-direction:column;padding:14px 12px;overflow-y:auto;overscroll-behavior:contain;
+}
+#brand{
+  font-family:var(--serif);font-size:21px;font-weight:600;letter-spacing:.04em;
+  color:var(--text);margin-bottom:2px;
+}
+#brand small{display:block;font-size:10px;letter-spacing:.28em;color:var(--cyan);font-family:var(--mono);margin-top:-2px}
+#topiclist{display:flex;flex-direction:column;gap:3px;margin-top:14px}
+.topic-group{
+  font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--dim2);
+  font-family:var(--mono);margin:10px 2px 4px;
+}
+.topic{
+  font-family:var(--serif);font-size:14px;color:var(--dim);cursor:pointer;text-align:left;
+  background:transparent;border:1px solid transparent;border-radius:8px;padding:7px 10px;
+  transition:background .15s,border-color .15s,color .15s;
+}
+.topic:hover{background:rgba(255,255,255,.06);color:var(--text)}
+.topic.on{
+  background:rgba(88,196,221,.13);border-color:rgba(88,196,221,.4);color:#d9f4fb;
+}
+#datapanel{margin-top:auto;border-top:1px solid var(--line);padding-top:12px}
+#datapanel .drow{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+#datapanel button, .tbar button{
+  font-family:var(--serif);font-size:12px;color:var(--text);cursor:pointer;
+  background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:7px;padding:6px 8px;
+  transition:background .15s,border-color .15s;
+}
+#datapanel button:hover, .tbar button:hover{background:rgba(255,255,255,.11);border-color:var(--line-strong)}
+#hints{margin-top:12px;border-top:1px solid var(--line);padding-top:10px;font-size:11.5px;color:var(--dim2);line-height:1.8;display:flex;flex-direction:column;gap:3px}
+#hints .sc{display:flex;gap:6px;align-items:baseline}
+.kbd{
+  font-family:var(--mono);font-size:9.5px;color:var(--text);background:rgba(255,255,255,.075);
+  border:1px solid var(--line);border-bottom-width:2px;border-radius:4px;padding:0 5px;white-space:nowrap;
+}
+
+/* ================= 参数面板 ================= */
+#paramhost{
+  top:14px;right:14px;width:302px;max-height:calc(100vh - 96px);
+  overflow-y:auto;overscroll-behavior:contain;
+}
+#paramhost::-webkit-scrollbar{width:8px}
+#paramhost::-webkit-scrollbar-thumb{background:rgba(255,255,255,.14);border-radius:4px}
+.prow{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.prow .plab{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap;min-width:56px}
+.prow input[type=range]{-webkit-appearance:none;appearance:none;flex:1;height:20px;background:transparent;cursor:pointer;min-width:70px}
+.prow input[type=range]::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--cyan),var(--magenta))}
+.prow input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#f2f6f8;border:2px solid #0e1116;margin-top:-5px;box-shadow:0 0 8px rgba(88,196,221,.6)}
+.prow input[type=range]::-moz-range-track{height:3px;border-radius:2px;background:linear-gradient(90deg,var(--cyan),var(--magenta))}
+.prow input[type=range]::-moz-range-thumb{width:11px;height:11px;border:2px solid #0e1116;border-radius:50%;background:#f2f6f8}
+.prow input.num{
+  width:56px;background:rgba(255,255,255,.05);border:1px solid transparent;border-radius:6px;
+  color:var(--text);font-family:var(--mono);font-size:11.5px;text-align:center;padding:3px 2px;outline:none;
+  -moz-appearance:textfield;appearance:textfield;
+}
+.prow input.num::-webkit-outer-spin-button,.prow input.num::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.prow input.num:focus{border-color:var(--cyan);background:rgba(88,196,221,.12)}
+.prow input.num.bad{border-color:var(--pink);background:rgba(233,30,99,.14)}
+.prow .unit{font-family:var(--mono);font-size:10px;color:var(--dim2);white-space:nowrap}
+.frow{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.frow .flab{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap}
+.frow input.expr{
+  flex:1;background:rgba(255,255,255,.05);border:1px solid transparent;border-radius:6px;
+  color:var(--yellow);font-family:var(--mono);font-size:12.5px;padding:5px 8px;outline:none;min-width:0;
+  transition:border-color .15s,background .15s;
+}
+.frow input.expr:focus{border-color:var(--cyan);background:rgba(88,196,221,.12)}
+.frow input.expr.bad{border-color:var(--pink);background:rgba(233,30,99,.14)}
+.mrow{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.mrow .mlab{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap}
+.mrow select{
+  flex:1;background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:6px;
+  color:var(--text);font-family:var(--mono);font-size:12px;padding:4px 6px;outline:none;cursor:pointer;
+}
+.mrow select:focus{border-color:var(--cyan)}
+.tgrid{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.tgl{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--dim);cursor:pointer;white-space:nowrap}
+.tgl input{accent-color:var(--cyan);cursor:pointer}
+.tgl:hover{color:var(--text)}
+.rrow{display:flex;justify-content:space-between;gap:10px;align-items:baseline;margin-bottom:3px;font-family:var(--mono);font-size:12px}
+.rrow .rk{color:var(--dim2);letter-spacing:.04em;white-space:nowrap}
+.rrow .rv{color:var(--text);text-align:right;overflow-wrap:anywhere}
+.rv.ok{color:var(--green)}
+.rv.bad{color:var(--pink)}
+
+/* ================= 时间轴 ================= */
+#timelinebar{
+  position:fixed;left:50%;transform:translateX(-50%);bottom:14px;z-index:4;
+  display:flex;align-items:center;gap:9px;
+  background:var(--panel);
+  -webkit-backdrop-filter:blur(10px);
+  backdrop-filter:blur(10px);
+  border:1px solid var(--line);border-radius:999px;
+  padding:7px 14px;max-width:calc(100vw - 24px);
+}
+#timelinebar button{
+  font-family:var(--mono);font-size:12px;color:var(--text);cursor:pointer;background:transparent;
+  border:none;padding:2px 6px;border-radius:5px;
+}
+#timelinebar button:hover{background:rgba(255,255,255,.1)}
+#t-time{font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap;min-width:96px;text-align:center}
+#t-track{position:relative;width:min(420px,46vw);height:22px;display:flex;align-items:center}
+#t-scrub{-webkit-appearance:none;appearance:none;width:100%;height:20px;background:transparent;cursor:pointer}
+#t-scrub::-webkit-slider-runnable-track{height:3px;border-radius:2px;background:rgba(255,255,255,.15)}
+#t-scrub::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;border-radius:50%;background:#fff;border:2px solid #0e1116;margin-top:-5px;box-shadow:0 0 8px rgba(88,196,221,.7)}
+#t-scrub::-moz-range-track{height:3px;border-radius:2px;background:rgba(255,255,255,.15)}
+#t-scrub::-moz-range-thumb{width:11px;height:11px;border:2px solid #0e1116;border-radius:50%;background:#fff}
+#t-step{font-family:var(--mono);font-size:10px;color:var(--dim2);white-space:nowrap}
+
+/* ================= toast / stats / selftest ================= */
+#toast{
+  position:fixed;left:50%;bottom:74px;transform:translate(-50%,14px);z-index:5;
+  background:rgba(20,25,33,.92);border:1px solid var(--line);border-radius:999px;
+  padding:7px 16px;font-size:13px;color:var(--text);opacity:0;pointer-events:none;
+  transition:opacity .3s,transform .3s;backdrop-filter:blur(8px);
+  white-space:nowrap;max-width:86vw;overflow:hidden;text-overflow:ellipsis;
+}
+#toast.on{opacity:1;transform:translate(-50%,0)}
+#stats{
+  position:fixed;left:50%;top:10px;transform:translateX(-50%);z-index:4;
+  font-family:var(--mono);font-size:11px;color:var(--dim);
+  background:var(--panel);border:1px solid var(--line);border-radius:999px;
+  padding:4px 12px;display:none;
+}
+#stats.on{display:block}
+#selftest{
+  position:fixed;left:250px;top:14px;z-index:6;max-width:min(560px,calc(100vw - 270px));max-height:70vh;overflow:auto;
+  font-family:var(--mono);font-size:11.5px;line-height:1.65;color:var(--dim);
+  background:rgba(14,17,22,.95);border:1px solid var(--line);border-radius:var(--r);padding:12px 14px;display:none;
+}
+#selftest.on{display:block}
+#selftest .st-head{color:var(--cyan);letter-spacing:.08em;margin-bottom:6px}
+#selftest .st-ok{color:var(--green)}
+#selftest .st-no{color:var(--pink)}
+
+/* ================= 响应式 ================= */
+@media (max-width:920px){
+  #sidebar{
+    left:0;right:0;top:0;bottom:auto;width:auto;height:auto;flex-direction:row;
+    flex-wrap:wrap;align-items:center;gap:6px;padding:8px 10px;overflow-x:auto;overflow-y:hidden;
+    border-right:none;border-bottom:1px solid var(--line);
+  }
+  #brand{font-size:16px;margin:0 8px 0 0}
+  #brand small{display:none}
+  #topiclist{flex-direction:row;gap:4px;margin:0;align-items:center}
+  .topic-group{display:none}
+  .topic{font-size:12.5px;padding:5px 9px;white-space:nowrap}
+  #datapanel{margin:0;border-top:none;padding:0;border-left:1px solid var(--line);padding-left:10px}
+  #datapanel .drow{display:flex}
+  #hints{display:none}
+  #paramhost{top:auto;right:10px;bottom:70px;width:280px;max-height:38vh}
+  #timelinebar{width:calc(100vw - 20px);justify-content:center}
+  #t-track{width:min(300px,40vw)}
+  #t-time{min-width:0;font-size:10px}
+  #selftest{left:10px;max-width:calc(100vw - 20px)}
+}
+@media (max-width:560px){
+  #paramhost{width:230px}
+  #timelinebar{gap:5px;padding:6px 10px}
+  #t-step{display:none}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition-duration:.01ms !important}
+}
+</style>
+</head>
+<body>
+<canvas id="stage" aria-label="数学可视化画布"></canvas>
+
+<aside id="sidebar">
+  <div id="brand">数学实验室<small>MATHLAB</small></div>
+  <nav id="topiclist" aria-label="主题列表"></nav>
+  <div id="datapanel">
+    <div class="sec-title">数据 · 分享</div>
+    <div class="drow">
+      <button id="btn-copy" title="把当前主题与全部参数编码进 URL，复制到剪贴板">复制链接</button>
+      <button id="btn-json-out" title="导出当前状态为 JSON 文件">JSON 导出</button>
+      <button id="btn-json-in" title="从 JSON 文件导入状态">JSON 导入</button>
+      <button id="btn-png" title="把当前画面导出为 PNG">PNG 快照</button>
+    </div>
+  </div>
+  <div id="hints" aria-label="快捷键说明"></div>
+</aside>
+
+<section class="panel" id="paramhost" aria-label="参数面板"></section>
+
+<div id="timelinebar" role="group" aria-label="时间轴">
+  <button id="t-prev" title="后退一帧">⏮</button>
+  <button id="btn-play" title="播放/暂停（空格）">▶</button>
+  <button id="t-next" title="前进一帧">⏭</button>
+  <span id="t-time">0.0 / 10.0 s</span>
+  <div id="t-track"><input id="t-scrub" type="range" min="0" max="1000" step="1" value="0" aria-label="时间轴拖拽"></div>
+  <span id="t-step">0.05s</span>
+</div>
+
+<div id="toast" role="status"></div>
+<div id="stats"></div>
+<div id="selftest" aria-live="polite"></div>
+
+<!-- LAB:SCRIPTS:BEGIN -->
+<script src="core/boot.js"></script>
+<script src="core/util.js"></script>
+<script src="core/tween.js"></script>
+<script src="core/vec.js"></script>
+<script src="core/expr.js"></script>
+<script src="core/state.js"></script>
+<script src="core/viewport.js"></script>
+<script src="core/render.js"></script>
+<script src="core/ui.js"></script>
+<script src="core/shortcuts.js"></script>
+<script src="core/hud.js"></script>
+<script src="core/app.js"></script>
+<script src="topics/coordinate3d.js"></script>
+<script src="topics/calculus.js"></script>
+<script src="topics/numbertheory.js"></script>
+<script src="main.js"></script>
+<!-- LAB:SCRIPTS:END -->
+</body>
+</html>
